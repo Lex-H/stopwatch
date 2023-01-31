@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>計時器</title>
+</head>
+<body>
+    <div id="time">00：00：00</div>
+    <button id="start_stop">開始計時</button>
+    <button id="clear">清除計時</button>
+</body>
+<script>
+    var intervalID, show_time;
+    var seconds_saved = 0;
+    var is_start = false;
+    var show_on_page = document.getElementById("time");
+
+    //#region 開始/暫停
+    var start_stop = document.getElementById("start_stop");
+    start_stop.onclick = function () {
+        // 判斷是否已經開始計時
+        if (is_start) {
+            is_start = !is_start;
+
+            // 儲存當前秒數
+            seconds_saved = show_time;
+            console.log(show_time);
+            clearInterval(intervalID);
+            // 暫停計時按鈕變成 開始
+            start_stop.innerHTML = "開始計時";
+            
+        }else{
+            is_start = !is_start;            
+
+            // 取得當前時間戳，毫秒
+            var start_time = Date.now();
+
+            // 更新時間函數
+            function update_time() {
+                // 取得當下時間
+                now_time = Date.now();
+
+                // 當下秒數 = 當下時間 - 開始時間
+                show_time =  now_time - start_time;
+
+                // 毫秒轉成秒；Math.floor 無條件捨去
+                show_time = Math.floor(show_time / 1000); 
+
+                // 展示秒數 = 當下秒數 + 之前儲存秒數
+                show_time = show_time + seconds_saved;
+
+                // 儲存展示秒數
+                localStorage.setItem('show_time', show_time.toString());
+
+                // 秒換成 hh:mm:ss 時間格式；Math.floor 無條件捨去
+                let hours = Math.floor(show_time / 3600);
+                if (hours < 10) {
+                    hours = "0" + hours.toString()
+                }
+                let mins = Math.floor((show_time % 3600) / 60);
+                if (mins < 10) {
+                    mins = "0" + mins.toString()
+                }
+                let seconds = Math.floor((show_time % 3600) % 60);
+                if (seconds < 10) {
+                    seconds = "0" + seconds.toString()
+                }
+                var result = `${hours}：${mins}：${seconds}`
+
+                // 更新頁面時間
+                show_on_page.innerHTML = `<h1>${result}</h1>`;
+    }
+
+            // 啟動計時器，每秒鐘執行一次更新時間函數
+            intervalID = setInterval(update_time, 1000);
+
+            // 開始計時按鈕變成 暫停
+            start_stop.innerHTML = "暫停計時";
+        }        
+    };
+    //#endregion
+
+    //#region 清除計時
+    var clear = document.getElementById("clear");
+    clear.onclick = function () {
+        is_start = false;
+
+        // 關閉計時器
+        clearInterval(intervalID);
+
+        // 頁面歸零
+        show_on_page.innerHTML = `<h1>00：00：00</h1>`;
+
+        // 暫停計時按鈕變成 開始
+        start_stop.innerHTML = "開始計時";
+
+        seconds_saved = 0;
+    }
+    //#endregion
+</script>
+</html>
